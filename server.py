@@ -140,6 +140,7 @@ HTML_PAGE = """
             display: flex;
             justify-content: center;
             gap: 25px;
+            flex-wrap: wrap; /* Ensure buttons wrap on smaller screens */
         }
 
         .button-container button {

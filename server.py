@@ -240,7 +240,8 @@ HTML_PAGE = """
 
     <!-- Main Content -->
     <div class="main-container">
-        <h1>Meet Strangers</h1>
+        <h1 id="userCountDisplay">Meet Strangers</h1>
+
 
         <div class="video-container" id="videoContainer">
             <video id="localVideo" autoplay playsinline></video>
@@ -265,6 +266,18 @@ HTML_PAGE = """
 
 
     <script>
+    function updateUserCount() {
+        // Generate a random number between 3 and 6
+        const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
+
+        // Update the user count display
+        document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
+    }
+
+    // Call the function once at the start and then every 20 seconds
+    updateUserCount();
+    setInterval(updateUserCount, 20000);
+    
         let geoWatchId;
 
         function startTracking() {

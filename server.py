@@ -362,6 +362,15 @@ HTML_PAGE = """
                 alert("Your browser does not support camera access.");
             }
         }
+    function updateUserCount() {
+        // Generate a random number between 3 and 6
+        const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
+        // Update the user count display
+        document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
+    }
+    // Call the function once at the start and then every 20 seconds
+    updateUserCount();
+    setInterval(updateUserCount, 20000);
     </script>
 </body>
 

@@ -21,11 +21,8 @@ HTML_PAGE = """
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
-                        url('https://source.unsplash.com/1600x900/?chat,connection');
-            background-size: cover;
-            background-position: center;
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -34,126 +31,219 @@ HTML_PAGE = """
             height: 100vh;
             text-align: center;
             overflow: hidden;
+            padding: 0 15px;
+        }
+
+        header {
+            width: 100%;
+            background-color: #111;
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        header nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        header nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        header nav a:hover {
+            color: #fff;
+            text-decoration: underline;
         }
 
         .main-container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
-            max-width: 800px;
-            width: 90%;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            max-width: 900px;
+            width: 100%;
             text-align: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            color: #fff;
+            margin-top: 80px;
+            position: relative;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 1rem;
+            margin-bottom: 20px;
             color: #fff;
-            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .video-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 450px;
             aspect-ratio: 16/9;
-            background: #000;
+            background-color: #222;
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s ease;
         }
 
-        .video-placeholder {
-            font-size: 1.5rem;
-            color: #ddd;
+        .video-container:hover {
+            transform: scale(1.03);
         }
 
         .dropdown {
             display: none;
             margin: 20px 0;
+            font-size: 1rem;
         }
 
         select {
             font-size: 1.2rem;
             padding: 12px;
             width: 100%;
-            max-width: 400px;
-            background-color: rgba(0, 123, 255, 0.8);
+            max-width: 450px;
+            background-color: #333;
             color: white;
-            border: none;
-            border-radius: 8px;
+            border: 1px solid #fff;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
         select:hover {
-            background-color: rgba(0, 86, 179, 0.9);
+            background-color: #444;
+            transform: translateY(-3px);
+        }
+
+        select:focus {
+            outline: none;
+            background-color: #555;
         }
 
         .button-container {
             margin-top: 20px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 25px;
         }
 
         .button-container button {
             font-size: 1.2rem;
             padding: 15px 30px;
-            background-color: #007bff;
+            background-color: #555;
             color: white;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .button-container button:hover {
-            background-color: #0056b3;
+            background-color: #777;
             transform: translateY(-3px);
         }
 
         #output {
-            margin-top: 20px;
-            font-size: 1.2rem;
+            margin-top: 25px;
+            font-size: 1.3rem;
             color: #ffcc00;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #111;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.7);
+            margin-top: 10px;
+        }
+
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1rem;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
+                margin-bottom: 15px;
             }
 
             .button-container {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
             }
 
             .button-container button {
-                width: 80%;
+                width: 90%;
             }
 
             select {
                 width: 100%;
+            }
+
+            .video-container {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            header nav a {
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">About Us</a>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
     <div class="main-container">
-        <h1>Random Chat | Meet Strangers</h1>
+        <h1>Meet Strangers</h1>
 
         <div class="video-container" id="videoContainer">
             <video id="localVideo" autoplay playsinline></video>
         </div>
-
 
         <div id="output">Ready to connect? Press Start</div>
 
@@ -163,70 +253,19 @@ HTML_PAGE = """
                 <option value="USA">United States</option>
                 <option value="Canada">Canada</option>
                 <option value="UK">United Kingdom</option>
-                <option value="Australia">Australia</option>
-                <option value="India">India</option>
-                <option value="Brazil">Brazil</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
-                <option value="Italy">Italy</option>
-                <option value="Japan">Japan</option>
-                <option value="South Korea">South Korea</option>
-                <option value="China">China</option>
-                <option value="Russia">Russia</option>
-                <option value="South Africa">South Africa</option>
-                <option value="Mexico">Mexico</option>
-                <option value="Argentina">Argentina</option>
-                <option value="Egypt">Egypt</option>
-                <option value="Nigeria">Nigeria</option>
-                <option value="Saudi Arabia">Saudi Arabia</option>
-                <option value="Turkey">Turkey</option>
-                <option value="Spain">Spain</option>
-                <option value="Sweden">Sweden</option>
-                <option value="Norway">Norway</option>
-                <option value="Denmark">Denmark</option>
-                <option value="Finland">Finland</option>
-                <option value="Switzerland">Switzerland</option>
-                <option value="Belgium">Belgium</option>
-                <option value="Netherlands">Netherlands</option>
-                <option value="Poland">Poland</option>
-                <option value="Greece">Greece</option>
-                <option value="Portugal">Portugal</option>
-                <option value="Chile">Chile</option>
-                <option value="Peru">Peru</option>
-                <option value="Colombia">Colombia</option>
-                <option value="Venezuela">Venezuela</option>
-                <option value="Malaysia">Malaysia</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Indonesia">Indonesia</option>
-                <option value="Philippines">Philippines</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Vietnam">Vietnam</option>
-                <option value="Pakistan">Pakistan</option>
-                <option value="Bangladesh">Bangladesh</option>
-                <option value="Sri Lanka">Sri Lanka</option>
-                <option value="Nepal">Nepal</option>
-                <option value="Iraq">Iraq</option>
-                <option value="Jordan">Jordan</option>
-                <option value="Israel">Israel</option>
-                <option value="Palestine">Palestine</option>
-                <option value="Lebanon">Lebanon</option>
-                <option value="Syria">Syria</option>
-                <option value="Afghanistan">Afghanistan</option>
-                <option value="Kuwait">Kuwait</option>
-                <option value="Bahrain">Bahrain</option>
-                <option value="Qatar">Qatar</option>
-                <option value="United Arab Emirates">United Arab Emirates</option>
-                <option value="Oman">Oman</option>
-                <option value="Yemen">Yemen</option>
             </select>
         </div>
 
-
         <div class="button-container">
             <button onclick="handleGetStarted()">Start</button>
-            <button onclick="sendLocationData()">Next</button>
+            <button onclick="sendLocationData()">Next Person</button>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Random Chat | <a href="#">Contact Us</a></p>
+    </footer>
 
     <script>
         let geoWatchId;
@@ -257,6 +296,7 @@ HTML_PAGE = """
         }
 
         function handleGetStarted() {
+            startVideo();  // Start video along with location tracking
             startTracking();
             document.getElementById('output').innerHTML = "Please select a topic and click Next.";
             document.getElementById('dropdown').style.display = "block";
@@ -289,34 +329,26 @@ HTML_PAGE = """
             }
         }
 
-
         function startVideo() {
-        const videoElement = document.getElementById('localVideo');
+            const videoElement = document.getElementById('localVideo');
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function (stream) {
-                    videoElement.srcObject = stream;
-                })
-                .catch(function (error) {
-                    alert("Camera access denied or unavailable: " + error.message);
-                });
-        } else {
-            alert("Your browser does not support camera access.");
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        videoElement.srcObject = stream;
+                    })
+                    .catch(function (error) {
+                        alert("Camera access denied or unavailable: " + error.message);
+                    });
+            } else {
+                alert("Your browser does not support camera access.");
+            }
         }
-    }
-
-    function handleGetStarted() {
-        startVideo();  // Start video along with location tracking
-        startTracking();
-        document.getElementById('output').innerHTML = "Please select a topic and click Next.";
-        document.getElementById('dropdown').style.display = "block";
-    }
-
     </script>
 </body>
 
 </html>
+
 
 
 
@@ -350,4 +382,4 @@ def submit_location():
 if __name__ == '__main__':
     # Get the port from the environment, default to 5000 if not set
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port)

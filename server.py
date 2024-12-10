@@ -5,8 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# Discord webhook URL (replace with your actual Discord webhook URL)
-DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1314246950341709896/GwVtxsvfF5bHyGnSWhw-H10taaywOaSfYkkOMOQ2qMwzcBHLCBnN_lWX9BzJJMRMV7_P'
+DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 # Cooldown time in seconds
 COOLDOWN_TIME = 10
 last_submission_time = None
